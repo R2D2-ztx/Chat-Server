@@ -15,11 +15,13 @@ public class ChatServer {
     public Socket clientSocket;
     private DataOutputStream out;
     private BufferedReader in;
-    private int port;
+    private final int port;
     private LinkedList<ClientDispatcher> clientList;
 
-    public String[] name = { "DiguinCaçador", "OBrabo", "MrsNobody", "Cool", "MoreColl", "Mary",
-            "OSafado", "Stripper", "SeuPai", "arrombado", "DuckNoris","bolaAmarela", "Achei", "PeteSelvas"};
+    //MY IP  192.168.1.109
+
+    public String[] name = { "OSafado", "Stripper", "OBrabo", "MrsNobody", "Cool", "MoreColl",
+             "SeuPai", "arrombado","DiguinCacador", "DuckNoris","bolaAmarela", "Achei", "Mary", "PeteSelvas"};
 
 
 
@@ -37,7 +39,7 @@ public class ChatServer {
 
         System.out.println("Server is listening...on port " + port + "\n");
         System.out.println("---------------------------------------\n" +
-                           "  To change your name use: 666newName  \n" +
+                           "  To change your name use: /666 newName  \n" +
                            "---------------------------------------\n");
 
         serverSocket = new ServerSocket(9000);
@@ -54,16 +56,16 @@ public class ChatServer {
             ClientDispatcher client = new ClientDispatcher(clientSocket,this,name[i]);
             clientList.add(client);
             fixedPool.submit(client);
-            System.out.println(name[i] + " Has Logged inside the matrix");
+            System.out.println(">>> " + name[i] + " Has Logged inside the matrix");
             i++;
 
         }
     }
+
     public void broadcast(String message) throws IOException {
         for(ClientDispatcher client : clientList ){
             client.receiveMessage(message);
         }
     }
-
 
 }

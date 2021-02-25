@@ -16,6 +16,7 @@ class ClientDispatcher implements Runnable{
     private String message = "";
     private ChatServer chatserver;
     public String name = "";
+    public boolean actions;
 
     public ClientDispatcher(Socket clientSocket, ChatServer chatServer, String name){
         this.clientSocket = clientSocket;
@@ -29,21 +30,21 @@ class ClientDispatcher implements Runnable{
             out = new DataOutputStream(clientSocket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            out.writeBytes("Username: ");
-            out.flush();
-            chatserver.broadcast(name + " has joined the chat!\n");
+            chatserver.broadcast(">>> " + name + " Has Logged inside the matrix!\n");
 
             while (clientSocket.isBound()) {
-                out.writeBytes("\n: ");
-                out.flush();
+                actions = false;
                 // read line from socket input reader
                 message = in.readLine();
                 // if received /quit close break out of the reading loop
-                if (message.contains("666")) {
-                }
+                changeName();
                 // show the received line to the console
-                System.out.println(message);
-                chatserver.broadcast(name + ": " + message + "\n");
+                printMessage();
+
+                statusOn();
+
+                quit();
+
             }
 
         } catch (IOException ex) { System.out.println("Receiving error: " + ex.getMessage()); }
@@ -54,11 +55,45 @@ class ClientDispatcher implements Runnable{
         out.flush();
     }
 
-    private void closeClientSocket() {
+    public void printMessage() throws IOException {
+
+        if(!actions) {
+            System.out.println(message);
+            chatserver.broadcast(name + ": " + message + "\n");
+        }
+    }
+
+    public void statusOn() throws IOException {
+        if(message.contains("/status")){
+            chatserver.broadcast(name);
+        }
+    }
+
+    public void changeName() throws IOException {
+        if (message.contains("/666")) {
+            System.out.print(name + " changes to ");
+            chatserver.broadcast(name + " changed his name to ");
+            name = message.split("/666")[1];
+            System.out.print(name);
+            chatserver.broadcast(name);
+            actions = true;
+        }
+    }
+
+    public void quit() throws IOException {
+        if (message.contains("/quit")) {
+            chatserver.broadcast(name + " left");
+            System.out.println("Closing client connection");
+            clientSocket.close();
+        }
+
+    }
+
+    public void closeClientSocket() {
         try {
 
             if (clientSocket != null) {
-                System.out.println("Closing client connection");
+
                 clientSocket.close();
             }
 
